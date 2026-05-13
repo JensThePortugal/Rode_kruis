@@ -22,17 +22,17 @@ export function ScoreView({ sessionId, playerId, quizId, nickname = '' }: ScoreV
 
   const me = players.find(p => p.id === playerId)
   const sorted = [...players].sort((a, b) => b.score - a.score)
-  const myRank = sorted.findIndex(p => p.id === playerId) + 1
+  const rankIndex = sorted.findIndex(p => p.id === playerId)
+  const myRank = rankIndex >= 0 ? rankIndex + 1 : null
 
   const totalQuestions = questions.length || 10
   const maxScore = totalQuestions * 1000
   const level = me ? getLevel(me.score, maxScore) : null
-  const badges = me
-    ? getBadges(playerId, answers, answers, totalQuestions)
-    : []
+  const myAnswers = answers.filter(a => a.player_id === playerId)
+  const badges = me ? getBadges(playerId, myAnswers, answers, totalQuestions) : []
 
   useEffect(() => {
-    if (myRank === 1) {
+    if (myRank === 1 && players.length > 0) {
       const duration = 5000
       const end = Date.now() + duration
       const colors = ['#F47920', '#003366', '#FFA959', '#ffffff', '#22c55e']
@@ -68,19 +68,21 @@ export function ScoreView({ sessionId, playerId, quizId, nickname = '' }: ScoreV
       )}
 
       {/* Rank */}
-      <div className="bg-white rounded-2xl px-6 py-5 shadow-sm border border-gray-100 w-full max-w-sm mb-6 slide-up"
-           style={{ animationDelay: '0.2s' }}>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-400 font-semibold">Jouw positie</p>
-            <p className="text-4xl font-black text-hok-navy">#{myRank}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-sm text-gray-400 font-semibold">Van totaal</p>
-            <p className="text-4xl font-black text-gray-300">{players.length}</p>
+      {myRank !== null && (
+        <div className="bg-white rounded-2xl px-6 py-5 shadow-sm border border-gray-100 w-full max-w-sm mb-6 slide-up"
+             style={{ animationDelay: '0.2s' }}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-400 font-semibold">Jouw positie</p>
+              <p className="text-4xl font-black text-hok-navy">#{myRank}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-gray-400 font-semibold">Van totaal</p>
+              <p className="text-4xl font-black text-gray-300">{players.length}</p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Badges */}
       {badges.length > 0 && (
@@ -99,6 +101,16 @@ export function ScoreView({ sessionId, playerId, quizId, nickname = '' }: ScoreV
 
       {/* XP + streak */}
       <XPSummary playerId={playerId} nickname={nickname} totalQuestions={totalQuestions} />
+
+      {/* Play again */}
+      <div className="w-full max-w-sm mt-8 slide-up" style={{ animationDelay: '0.55s' }}>
+        <a
+          href="/play"
+          className="block w-full bg-hok-orange hover:bg-hok-orange-dark text-white font-black text-center text-base py-4 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-hok-orange/20"
+        >
+          Nog een keer spelen 🚀
+        </a>
+      </div>
 
       {/* Level legend */}
       <div className="w-full max-w-sm mt-6 slide-up" style={{ animationDelay: '0.6s' }}>

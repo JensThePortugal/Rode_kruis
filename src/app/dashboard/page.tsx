@@ -28,17 +28,26 @@ export default async function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-10">
         <div>
-          <p className="text-sm text-gray-400 font-medium">Welkom terug</p>
-          <h1 className="text-2xl font-black text-hok-navy">{name} 👋</h1>
+          <p className="text-sm text-gray-400 font-medium">{user ? 'Welkom terug' : 'Trainer dashboard'}</p>
+          <h1 className="text-2xl font-black text-hok-navy">{user ? `${name} 👋` : 'EHBO Quiz'}</h1>
         </div>
-        <form action={signOut}>
-          <button
-            type="submit"
-            className="text-sm text-gray-400 hover:text-red-500 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-red-50"
+        {user ? (
+          <form action={signOut}>
+            <button
+              type="submit"
+              className="text-sm text-gray-400 hover:text-red-500 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-red-50"
+            >
+              Uitloggen
+            </button>
+          </form>
+        ) : (
+          <Link
+            href="/login"
+            className="text-sm text-gray-400 hover:text-hok-navy font-medium transition-colors px-3 py-2 rounded-lg hover:bg-gray-50"
           >
-            Uitloggen
-          </button>
-        </form>
+            Inloggen →
+          </Link>
+        )}
       </div>
 
       {/* Create session card */}

@@ -29,7 +29,7 @@ export default function LandingPage() {
       {/* Two big cards */}
       <div className="grid sm:grid-cols-2 gap-6 w-full max-w-2xl">
         {/* Trainer card */}
-        <Link href="/login" className="group block">
+        <Link href="/dashboard" className="group block">
           <div className="relative overflow-hidden bg-hok-navy rounded-3xl p-8 h-full transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl hover:shadow-hok-navy/30">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-8 -translate-x-8" />
@@ -40,7 +40,7 @@ export default function LandingPage() {
                 Maak een quiz-sessie aan en leid jouw groep door de EHBO-vragen.
               </p>
               <span className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold text-sm px-5 py-3 rounded-xl transition-colors">
-                Inloggen
+                Dashboard
                 <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                 </svg>

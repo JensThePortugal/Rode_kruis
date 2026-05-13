@@ -129,6 +129,16 @@ export function Leaderboard({ sessionId, quizId }: LeaderboardProps) {
           <p className="font-semibold">Geen spelers gevonden</p>
         </div>
       )}
+
+      {/* New session button */}
+      <div className="w-full mt-10 mb-4">
+        <a
+          href="/dashboard"
+          className="block w-full bg-hok-orange hover:bg-hok-orange-dark text-white font-black text-center text-lg py-4 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-hok-orange/20"
+        >
+          Nieuwe sessie starten →
+        </a>
+      </div>
     </div>
   )
 }

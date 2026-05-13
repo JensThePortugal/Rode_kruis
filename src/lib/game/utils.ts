@@ -17,12 +17,11 @@ export function getLevel(score: number, maxScore: number): Level {
 
 export function getBadges(
   playerId: string,
-  answers: Array<{ player_id: string; is_correct: boolean; response_time_ms: number; question_index: number }>,
+  myAnswers: Array<{ player_id: string; is_correct: boolean; response_time_ms: number; question_index: number }>,
   allAnswers: Array<{ player_id: string; is_correct: boolean; response_time_ms: number; question_index: number }>,
   totalQuestions: number
 ): PlayerBadge[] {
   const badges: PlayerBadge[] = []
-  const myAnswers = answers.filter(a => a.player_id === playerId)
 
   if (myAnswers.length === totalQuestions && myAnswers.every(a => a.is_correct)) {
     badges.push({ id: 'perfect', label: 'Perfect streak', emoji: '🎯' })
