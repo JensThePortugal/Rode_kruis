@@ -40,7 +40,7 @@ export function HostGameClient({ sessionId, initialSession, joinUrl }: Props) {
   }
 
   if (current.status === 'results' || current.status === 'finished') {
-    return <Leaderboard sessionId={sessionId} />
+    return <Leaderboard sessionId={sessionId} quizId={current.quiz_id} />
   }
 
   return (

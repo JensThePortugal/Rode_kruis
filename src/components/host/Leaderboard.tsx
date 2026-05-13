@@ -3,19 +3,20 @@
 import { useEffect } from 'react'
 import confetti from 'canvas-confetti'
 import { usePlayers } from '@/hooks/usePlayers'
+import { useQuestions } from '@/hooks/useQuestions'
 import { getLevel } from '@/lib/game/utils'
-import { HOK_QUESTIONS } from '@/lib/game/seedData'
 
 interface LeaderboardProps {
   sessionId: string
+  quizId: string
 }
-
-const MAX_SCORE = HOK_QUESTIONS.reduce((sum, q) => sum + 1000, 0)
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
-export function Leaderboard({ sessionId }: LeaderboardProps) {
+export function Leaderboard({ sessionId, quizId }: LeaderboardProps) {
   const players = usePlayers(sessionId)
+  const questions = useQuestions(quizId)
+  const maxScore = (questions.length || 10) * 1000
   const sorted = [...players].sort((a, b) => b.score - a.score)
 
   useEffect(() => {
@@ -59,7 +60,7 @@ export function Leaderboard({ sessionId }: LeaderboardProps) {
           {[1, 0, 2].map((rank) => {
             const player = sorted[rank]
             if (!player) return <div key={rank} className="w-24" />
-            const level = getLevel(player.score, MAX_SCORE)
+            const level = getLevel(player.score, maxScore)
             const heights = [28, 36, 20]
             return (
               <div
@@ -90,7 +91,7 @@ export function Leaderboard({ sessionId }: LeaderboardProps) {
       {/* Full ranking */}
       <div className="w-full space-y-2">
         {sorted.map((player, i) => {
-          const level = getLevel(player.score, MAX_SCORE)
+          const level = getLevel(player.score, maxScore)
           return (
             <div
               key={player.id}

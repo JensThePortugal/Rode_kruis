@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createGameSession, signOut } from '@/lib/game/actions'
+import Link from 'next/link'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -9,9 +10,11 @@ export default async function DashboardPage() {
 
   const { data: profile } = await supabase
     .from('trainer_profiles')
-    .select('full_name, organisation')
+    .select('full_name, organisation, role')
     .eq('id', user.id)
     .single()
+
+  const isAdmin = profile?.role === 'admin'
 
   const { data: recentSessions } = await supabase
     .from('game_sessions')
@@ -108,8 +111,27 @@ export default async function DashboardPage() {
         </div>
       )}
 
+      {/* Admin panel link — alleen zichtbaar voor HOK admins */}
+      {isAdmin && (
+        <Link
+          href="/admin"
+          className="flex items-center justify-between bg-hok-navy rounded-2xl px-5 py-4 mb-6 hover:bg-hok-navy-light transition-colors group"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">⚙️</span>
+            <div>
+              <p className="font-black text-white text-sm">HOK Contentbeheer</p>
+              <p className="text-white/50 text-xs">Vragen aanpassen, video&apos;s toevoegen</p>
+            </div>
+          </div>
+          <svg className="w-4 h-4 text-white/40 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+          </svg>
+        </Link>
+      )}
+
       {/* Info strip */}
-      <div className="mt-8 bg-hok-orange/10 rounded-2xl p-5 border border-hok-orange/20">
+      <div className="mt-4 bg-hok-orange/10 rounded-2xl p-5 border border-hok-orange/20">
         <div className="flex items-start gap-3">
           <span className="text-2xl">📖</span>
           <div>
