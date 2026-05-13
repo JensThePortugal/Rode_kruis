@@ -4,16 +4,6 @@ import Link from 'next/link'
 
 export default async function AdminPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  const { data: profile } = await supabase
-    .from('trainer_profiles')
-    .select('role, full_name')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role !== 'admin') redirect('/dashboard')
 
   const [{ count: questionCount }, { count: activeSessionCount }] = await Promise.all([
     supabase.from('questions').select('*', { count: 'exact', head: true }),
@@ -29,7 +19,7 @@ export default async function AdminPage() {
           HOK Contentbeheer
         </div>
         <h1 className="text-4xl font-black text-hok-navy mb-1">Admin Dashboard</h1>
-        <p className="text-gray-400 font-semibold">Welkom, {profile?.full_name}</p>
+        <p className="text-gray-400 font-semibold">HOK Contentbeheer — vragen aanpassen voor alle trainers</p>
       </div>
 
       {/* Stats */}

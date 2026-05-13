@@ -261,8 +261,7 @@ export async function updateQuestion(
     video_url: string
   }
 ) {
-  const supabase = await requireAdmin()
-  if (!supabase) return { error: 'Geen toegang — alleen HOK admins' }
+  const supabase = await createClient()
 
   const { error } = await supabase
     .from('questions')
@@ -283,8 +282,7 @@ export async function addQuestion(data: {
   video_topic: string
   video_url: string
 }) {
-  const supabase = await requireAdmin()
-  if (!supabase) return { error: 'Geen toegang — alleen HOK admins' }
+  const supabase = await createClient()
 
   const { data: quiz } = await supabase
     .from('quizzes')
@@ -311,8 +309,7 @@ export async function addQuestion(data: {
 }
 
 export async function deleteQuestion(questionId: string) {
-  const supabase = await requireAdmin()
-  if (!supabase) return { error: 'Geen toegang — alleen HOK admins' }
+  const supabase = await createClient()
 
   const { error } = await supabase
     .from('questions')

@@ -1,23 +1,9 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getAdminQuestions } from '@/lib/game/actions'
 import { ANSWER_COLORS } from '@/lib/game/utils'
 import type { Question } from '@/types/game'
 
 export default async function AdminQuestionsPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  const { data: profile } = await supabase
-    .from('trainer_profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role !== 'admin') redirect('/dashboard')
-
   const questions = await getAdminQuestions()
 
   return (
