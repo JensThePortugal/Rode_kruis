@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -23,14 +23,8 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
-
-  const protectedPaths = ['/admin']
-  const isProtected = protectedPaths.some(p => request.nextUrl.pathname.startsWith(p))
-
-  if (isProtected && !user) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
+  // Refresh auth session — no routes are blocked (MVP demo mode)
+  await supabase.auth.getUser()
 
   return supabaseResponse
 }
