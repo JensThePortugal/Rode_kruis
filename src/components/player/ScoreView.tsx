@@ -6,15 +6,17 @@ import { usePlayers } from '@/hooks/usePlayers'
 import { getLevel, getBadges } from '@/lib/game/utils'
 import { HOK_QUESTIONS } from '@/lib/game/seedData'
 import { useGameStore } from '@/store/gameStore'
+import { XPSummary } from './XPSummary'
 
 interface ScoreViewProps {
   sessionId: string
   playerId: string
+  nickname?: string
 }
 
 const MAX_SCORE = HOK_QUESTIONS.length * 1000
 
-export function ScoreView({ sessionId, playerId }: ScoreViewProps) {
+export function ScoreView({ sessionId, playerId, nickname = '' }: ScoreViewProps) {
   const players = usePlayers(sessionId)
   const { answers } = useGameStore()
 
@@ -92,8 +94,11 @@ export function ScoreView({ sessionId, playerId }: ScoreViewProps) {
         </div>
       )}
 
+      {/* XP + streak */}
+      <XPSummary playerId={playerId} nickname={nickname} />
+
       {/* Level legend */}
-      <div className="w-full max-w-sm slide-up" style={{ animationDelay: '0.4s' }}>
+      <div className="w-full max-w-sm mt-6 slide-up" style={{ animationDelay: '0.6s' }}>
         <h3 className="text-sm font-black text-gray-400 mb-3 uppercase tracking-wider">Levels</h3>
         <div className="space-y-2">
           {[

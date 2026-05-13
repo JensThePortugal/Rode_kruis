@@ -97,7 +97,7 @@ export function PlayerGameClient({ sessionId, playerId }: Props) {
 
   // Game finished — show final score
   if (session.status === 'results' || session.status === 'finished') {
-    return <ScoreView sessionId={sessionId} playerId={playerId} />
+    return <ScoreView sessionId={sessionId} playerId={playerId} nickname={me.nickname} />
   }
 
   // Playing

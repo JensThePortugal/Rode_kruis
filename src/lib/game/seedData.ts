@@ -10,6 +10,8 @@ export const HOK_QUESTIONS = [
     correct_answer: 1,
     explanation: "Bij volwassenen druk je het borstbeen ten minste 5 cm maar niet meer dan 6 cm naar beneden.",
     time_limit: 20,
+    video_topic: "Reanimatie: hoe diep druk je?",
+    video_url: "",
   },
   {
     question: "Hoe snel geef je borstcompressies bij reanimatie?",
@@ -22,6 +24,8 @@ export const HOK_QUESTIONS = [
     correct_answer: 2,
     explanation: "Het juiste tempo bij reanimatie is 100 tot 120 borstcompressies per minuut.",
     time_limit: 20,
+    video_topic: "Reanimatie: het juiste tempo",
+    video_url: "",
   },
   {
     question: "Wanneer leg je een bewusteloos slachtoffer NIET in de stabiele zijligging?",
@@ -34,6 +38,8 @@ export const HOK_QUESTIONS = [
     correct_answer: 1,
     explanation: "Bij mogelijk wervelletsel (val van hoogte, auto-ongeluk) leg je het slachtoffer niet in de zijligging.",
     time_limit: 20,
+    video_topic: "Stabiele zijligging — wanneer wel, wanneer niet?",
+    video_url: "",
   },
   {
     question: "Hoe lang koel je een brandwond met lauw stromend kraanwater?",
@@ -46,6 +52,8 @@ export const HOK_QUESTIONS = [
     correct_answer: 1,
     explanation: "Koel brandwonden 10–20 minuten met lauw zachtstromend kraanwater.",
     time_limit: 20,
+    video_topic: "Brandwonden behandelen — koel & kalm",
+    video_url: "",
   },
   {
     question: "Binnen hoeveel minuten na een circulatiestilstand moet een AED worden ingezet om de overlevingskans aanmerkelijk te vergroten?",
@@ -58,6 +66,8 @@ export const HOK_QUESTIONS = [
     correct_answer: 2,
     explanation: "De inzet van een AED binnen 6 minuten vergroot aanmerkelijk de overlevingskans.",
     time_limit: 20,
+    video_topic: "AED: elke seconde telt",
+    video_url: "",
   },
   {
     question: "Iemand verslikt zich en kan niet meer praten. Wat doe je als eerste?",
@@ -70,6 +80,8 @@ export const HOK_QUESTIONS = [
     correct_answer: 1,
     explanation: "Bij niet-effectief hoesten geef je eerst 5 rugslagen. Heeft dat geen effect? Dan geef je maximaal 5 buikstoten.",
     time_limit: 20,
+    video_topic: "Verslikking — 5 rugslagen redden levens",
+    video_url: "",
   },
   {
     question: "Hoe stel je vast of iemand bewusteloos is?",
@@ -82,6 +94,8 @@ export const HOK_QUESTIONS = [
     correct_answer: 1,
     explanation: "Iemand is bewusteloos als hij niet reageert op schudden aan de schouders en aanspreken.",
     time_limit: 20,
+    video_topic: "Is iemand bewusteloos? Zo check je het",
+    video_url: "",
   },
   {
     question: "Wat is de JUISTE verhouding borstcompressies en beademingen bij volwassenen?",
@@ -94,6 +108,8 @@ export const HOK_QUESTIONS = [
     correct_answer: 1,
     explanation: "Bij reanimatie van volwassenen wissel je 30 borstcompressies af met 2 beademingen.",
     time_limit: 20,
+    video_topic: "30:2 — de gouden reanimatieregel",
+    video_url: "",
   },
   {
     question: "Welke test gebruik je om een beroerte te herkennen?",
@@ -106,6 +122,8 @@ export const HOK_QUESTIONS = [
     correct_answer: 1,
     explanation: "De mond-spraak-arm test: Mond (tanden laten zien), Spraak (een zin spreken), Arm (beide armen optillen).",
     time_limit: 20,
+    video_topic: "Herken een beroerte in 3 stappen",
+    video_url: "",
   },
   {
     question: "Iemand is bewusteloos met normale ademhaling. Wat doe je?",
@@ -118,5 +136,7 @@ export const HOK_QUESTIONS = [
     correct_answer: 1,
     explanation: "Bewusteloos + normale ademhaling = stabiele zijligging. Zo blijft de luchtweg vrij en kan vocht uit de mond lopen.",
     time_limit: 20,
+    video_topic: "Bewusteloos maar ademt — wat nu?",
+    video_url: "",
   },
 ]

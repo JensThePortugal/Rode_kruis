@@ -1,8 +1,12 @@
 import Link from 'next/link'
+import { ReturningPlayerBanner } from '@/components/ReturningPlayerBanner'
 
 export default function LandingPage() {
   return (
     <main className="flex-1 flex flex-col items-center justify-center min-h-screen px-4 py-12">
+      {/* Returning player banner */}
+      <ReturningPlayerBanner />
+
       {/* Header */}
       <div className="text-center mb-12 slide-up">
         <div className="inline-flex items-center gap-2 bg-hok-orange/10 border border-hok-orange/20 text-hok-orange-dark font-semibold text-sm px-4 py-2 rounded-full mb-6">

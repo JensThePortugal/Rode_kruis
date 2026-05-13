@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import confetti from 'canvas-confetti'
 import { HOK_QUESTIONS } from '@/lib/game/seedData'
 import { ANSWER_COLORS } from '@/lib/game/utils'
+import { VideoClip } from './VideoClip'
 
 interface AnswerFeedbackProps {
   isCorrect: boolean
@@ -84,7 +85,20 @@ export function AnswerFeedback({
         </div>
       )}
 
-      <p className="mt-8 text-gray-400 text-sm animate-pulse">
+      {/* Video clip */}
+      {question && (
+        <div className="w-full max-w-sm slide-up" style={{ animationDelay: '0.45s' }}>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 text-center">
+            📱 Bekijk de uitleg
+          </p>
+          <VideoClip
+            topic={question.video_topic}
+            videoUrl={question.video_url || undefined}
+          />
+        </div>
+      )}
+
+      <p className="mt-6 text-gray-400 text-sm animate-pulse">
         Wacht op de volgende vraag…
       </p>
     </div>
