@@ -16,12 +16,14 @@ export async function loginWithMagicLink(formData: FormData) {
     options: {
       emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/auth/callback`,
       data: { full_name: fullName },
+      shouldCreateUser: true,
     },
   })
 
   if (error) return { error: error.message }
   return { success: true }
 }
+
 
 export async function createGameSession() {
   const supabase = await createClient()
