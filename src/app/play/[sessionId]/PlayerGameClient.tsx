@@ -1,0 +1,139 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useGameSession } from '@/hooks/useGameSession'
+import { useGameStore } from '@/store/gameStore'
+import { createClient } from '@/lib/supabase/client'
+import { WaitingRoom } from '@/components/player/WaitingRoom'
+import { QuestionView } from '@/components/player/QuestionView'
+import { AnswerFeedback } from '@/components/player/AnswerFeedback'
+import { ScoreView } from '@/components/player/ScoreView'
+import type { GamePlayer } from '@/types/game'
+
+interface Props {
+  sessionId: string
+  playerId: string
+}
+
+interface AnswerResult {
+  isCorrect: boolean
+  pointsEarned: number
+  answer: number
+}
+
+export function PlayerGameClient({ sessionId, playerId }: Props) {
+  const session = useGameSession(sessionId)
+  const { answers } = useGameStore()
+  const [me, setMe] = useState<GamePlayer | null>(null)
+  const [answerResult, setAnswerResult] = useState<AnswerResult | null>(null)
+  const [lastAnsweredQuestion, setLastAnsweredQuestion] = useState<number>(-1)
+
+  // Load player info
+  useEffect(() => {
+    const supabase = createClient()
+    supabase
+      .from('game_players')
+      .select('*')
+      .eq('id', playerId)
+      .single()
+      .then(({ data }) => { if (data) setMe(data as GamePlayer) })
+
+    // Subscribe to score updates
+    const channel = supabase
+      .channel(`player:${playerId}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'game_players', filter: `id=eq.${playerId}` },
+        (payload) => setMe(payload.new as GamePlayer)
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [playerId])
+
+  const currentQuestion = session?.current_question ?? -1
+  const myAnswerForCurrentQuestion = answers.find(
+    a => a.player_id === playerId && a.question_index === currentQuestion
+  )
+  const alreadyAnswered = !!myAnswerForCurrentQuestion
+
+  function handleAnswered(result: AnswerResult) {
+    setAnswerResult(result)
+    setLastAnsweredQuestion(currentQuestion)
+    // Update local score optimistically
+    if (result.isCorrect && me) {
+      setMe(prev => prev ? { ...prev, score: prev.score + result.pointsEarned } : prev)
+    }
+  }
+
+  // Reset answer result when question changes
+  useEffect(() => {
+    if (currentQuestion !== lastAnsweredQuestion) {
+      setAnswerResult(null)
+    }
+  }, [currentQuestion, lastAnsweredQuestion])
+
+  // Not yet joined or loading
+  if (!session || !me) {
+    return (
+      <div className="flex-1 flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-5xl float">⏳</div>
+        </div>
+      </div>
+    )
+  }
+
+  // Lobby / waiting
+  if (session.status === 'lobby') {
+    return (
+      <WaitingRoom
+        sessionId={sessionId}
+        playerId={playerId}
+        nickname={me.nickname}
+      />
+    )
+  }
+
+  // Game finished — show final score
+  if (session.status === 'results' || session.status === 'finished') {
+    return <ScoreView sessionId={sessionId} playerId={playerId} />
+  }
+
+  // Playing
+  if (session.status === 'playing' && currentQuestion >= 0) {
+    // Show feedback if just answered
+    if (answerResult !== null && lastAnsweredQuestion === currentQuestion) {
+      return (
+        <AnswerFeedback
+          isCorrect={answerResult.isCorrect}
+          pointsEarned={answerResult.pointsEarned}
+          selectedAnswer={answerResult.answer}
+          questionIndex={currentQuestion}
+          totalScore={me.score}
+        />
+      )
+    }
+
+    // Show question
+    return (
+      <QuestionView
+        sessionId={sessionId}
+        playerId={playerId}
+        questionIndex={currentQuestion}
+        questionStartedAt={session.question_started_at ?? new Date().toISOString()}
+        onAnswered={handleAnswered}
+        alreadyAnswered={alreadyAnswered}
+      />
+    )
+  }
+
+  return (
+    <div className="flex-1 flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <div className="text-5xl float">⏳</div>
+        <p className="text-gray-500 mt-4 font-semibold">Even geduld…</p>
+      </div>
+    </div>
+  )
+}
