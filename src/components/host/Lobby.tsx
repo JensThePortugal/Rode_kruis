@@ -43,10 +43,16 @@ export function Lobby({ sessionId, joinCode, joinUrl }: LobbyProps) {
             </span>
           </div>
 
-          <div className="bg-white rounded-2xl p-4 shadow-lg inline-block">
-            <QRCode value={joinUrl} size={160} fgColor="#003366" />
+          <p className="text-sm font-bold text-hok-navy mb-3">Scan met je telefoon</p>
+          <div className="relative inline-block">
+            <div className="absolute -inset-3 rounded-3xl border-4 border-hok-orange/40 pulse-glow" />
+            <div className="bg-white rounded-2xl p-4 shadow-lg relative">
+              <QRCode value={joinUrl} size={200} fgColor="#003366" />
+            </div>
           </div>
-          <p className="text-xs text-gray-400 mt-2">Scan of ga naar <strong>{joinUrl.replace('https://', '')}</strong></p>
+          <p className="text-xs text-gray-400 mt-4">
+            {joinUrl.replace('https://', '')}
+          </p>
         </div>
 
         {/* Players list */}

@@ -31,6 +31,7 @@ export function PlayerGameClient({ sessionId, playerId }: Props) {
   const [me, setMe] = useState<GamePlayer | null>(null)
   const [answerResult, setAnswerResult] = useState<AnswerResult | null>(null)
   const [lastAnsweredQuestion, setLastAnsweredQuestion] = useState<number>(-1)
+  const [streak, setStreak] = useState<number>(0)
 
   // Load player info + subscribe to score updates
   useEffect(() => {
@@ -63,8 +64,13 @@ export function PlayerGameClient({ sessionId, playerId }: Props) {
   function handleAnswered(result: AnswerResult) {
     setAnswerResult(result)
     setLastAnsweredQuestion(currentQuestion)
-    if (result.isCorrect && me) {
-      setMe(prev => prev ? { ...prev, score: prev.score + result.pointsEarned } : prev)
+    if (result.isCorrect) {
+      setStreak(prev => prev + 1)
+      if (me) {
+        setMe(prev => prev ? { ...prev, score: prev.score + result.pointsEarned } : prev)
+      }
+    } else {
+      setStreak(0)
     }
   }
 
@@ -121,6 +127,7 @@ export function PlayerGameClient({ sessionId, playerId }: Props) {
           selectedAnswer={answerResult.answer}
           question={currentQ}
           totalScore={me.score}
+          streak={streak}
         />
       )
     }
