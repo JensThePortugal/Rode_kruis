@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useGameSession } from '@/hooks/useGameSession'
 import { useQuestions } from '@/hooks/useQuestions'
+import { useAnswers } from '@/hooks/useAnswers'
 import { useGameStore } from '@/store/gameStore'
 import { createClient } from '@/lib/supabase/client'
 import { WaitingRoom } from '@/components/player/WaitingRoom'
@@ -25,6 +26,7 @@ interface AnswerResult {
 export function PlayerGameClient({ sessionId, playerId }: Props) {
   const session = useGameSession(sessionId)
   const questions = useQuestions(session?.quiz_id)
+  useAnswers(sessionId)
   const { answers } = useGameStore()
   const [me, setMe] = useState<GamePlayer | null>(null)
   const [answerResult, setAnswerResult] = useState<AnswerResult | null>(null)
@@ -98,6 +100,17 @@ export function PlayerGameClient({ sessionId, playerId }: Props) {
   }
 
   if (session.status === 'playing' && currentQuestion >= 0) {
+    if (questions.length === 0) {
+      return (
+        <div className="flex-1 flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="text-5xl mb-4 float">⚡</div>
+            <p className="text-gray-500 font-semibold">Quiz laden…</p>
+          </div>
+        </div>
+      )
+    }
+
     const currentQ = questions[currentQuestion]
 
     if (answerResult !== null && lastAnsweredQuestion === currentQuestion) {
