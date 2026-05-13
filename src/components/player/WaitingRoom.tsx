@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { usePlayers } from '@/hooks/usePlayers'
 import { HOKLogo } from '@/components/HOKLogo'
 
@@ -26,11 +26,14 @@ export function WaitingRoom({ sessionId, playerId, nickname }: WaitingRoomProps)
   const [tipIndex, setTipIndex] = useState(0)
   const [tipVisible, setTipVisible] = useState(true)
   const [pulse, setPulse] = useState(false)
-  const prevCount = useState(players.length)[0]
+  const prevCountRef = useRef(players.length)
 
   // Pulse player count when a new player joins
   useEffect(() => {
-    if (players.length !== prevCount) setPulse(true)
+    if (players.length !== prevCountRef.current) {
+      setPulse(true)
+      prevCountRef.current = players.length
+    }
     const t = setTimeout(() => setPulse(false), 600)
     return () => clearTimeout(t)
   }, [players.length])
