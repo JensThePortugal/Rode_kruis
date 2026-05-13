@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react'
 import confetti from 'canvas-confetti'
 import { useGameStore } from '@/store/gameStore'
-import { HOK_QUESTIONS } from '@/lib/game/seedData'
 import {
   earnSessionXP,
   getLevelForXP,
@@ -16,9 +15,10 @@ import {
 interface XPSummaryProps {
   playerId: string
   nickname: string
+  totalQuestions: number
 }
 
-export function XPSummary({ playerId, nickname }: XPSummaryProps) {
+export function XPSummary({ playerId, nickname, totalQuestions }: XPSummaryProps) {
   const { answers } = useGameStore()
   const [result, setResult] = useState<EarnResult | null>(null)
   const [barPct, setBarPct] = useState(0)
@@ -34,7 +34,7 @@ export function XPSummary({ playerId, nickname }: XPSummaryProps) {
 
     const r = earnSessionXP({
       correctAnswers,
-      totalQuestions: HOK_QUESTIONS.length,
+      totalQuestions,
       progress,
       nickname,
     })

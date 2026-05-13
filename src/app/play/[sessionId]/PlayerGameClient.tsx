@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useGameSession } from '@/hooks/useGameSession'
+import { useQuestions } from '@/hooks/useQuestions'
 import { useGameStore } from '@/store/gameStore'
 import { createClient } from '@/lib/supabase/client'
 import { WaitingRoom } from '@/components/player/WaitingRoom'
@@ -23,12 +24,13 @@ interface AnswerResult {
 
 export function PlayerGameClient({ sessionId, playerId }: Props) {
   const session = useGameSession(sessionId)
+  const questions = useQuestions(session?.quiz_id)
   const { answers } = useGameStore()
   const [me, setMe] = useState<GamePlayer | null>(null)
   const [answerResult, setAnswerResult] = useState<AnswerResult | null>(null)
   const [lastAnsweredQuestion, setLastAnsweredQuestion] = useState<number>(-1)
 
-  // Load player info
+  // Load player info + subscribe to score updates
   useEffect(() => {
     const supabase = createClient()
     supabase
@@ -38,7 +40,6 @@ export function PlayerGameClient({ sessionId, playerId }: Props) {
       .single()
       .then(({ data }) => { if (data) setMe(data as GamePlayer) })
 
-    // Subscribe to score updates
     const channel = supabase
       .channel(`player:${playerId}`)
       .on(
@@ -60,7 +61,6 @@ export function PlayerGameClient({ sessionId, playerId }: Props) {
   function handleAnswered(result: AnswerResult) {
     setAnswerResult(result)
     setLastAnsweredQuestion(currentQuestion)
-    // Update local score optimistically
     if (result.isCorrect && me) {
       setMe(prev => prev ? { ...prev, score: prev.score + result.pointsEarned } : prev)
     }
@@ -73,7 +73,6 @@ export function PlayerGameClient({ sessionId, playerId }: Props) {
     }
   }, [currentQuestion, lastAnsweredQuestion])
 
-  // Not yet joined or loading
   if (!session || !me) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-screen">
@@ -84,7 +83,6 @@ export function PlayerGameClient({ sessionId, playerId }: Props) {
     )
   }
 
-  // Lobby / waiting
   if (session.status === 'lobby') {
     return (
       <WaitingRoom
@@ -95,32 +93,32 @@ export function PlayerGameClient({ sessionId, playerId }: Props) {
     )
   }
 
-  // Game finished — show final score
   if (session.status === 'results' || session.status === 'finished') {
-    return <ScoreView sessionId={sessionId} playerId={playerId} nickname={me.nickname} />
+    return <ScoreView sessionId={sessionId} playerId={playerId} quizId={session.quiz_id} nickname={me.nickname} />
   }
 
-  // Playing
   if (session.status === 'playing' && currentQuestion >= 0) {
-    // Show feedback if just answered
+    const currentQ = questions[currentQuestion]
+
     if (answerResult !== null && lastAnsweredQuestion === currentQuestion) {
       return (
         <AnswerFeedback
           isCorrect={answerResult.isCorrect}
           pointsEarned={answerResult.pointsEarned}
           selectedAnswer={answerResult.answer}
-          questionIndex={currentQuestion}
+          question={currentQ}
           totalScore={me.score}
         />
       )
     }
 
-    // Show question
     return (
       <QuestionView
         sessionId={sessionId}
         playerId={playerId}
         questionIndex={currentQuestion}
+        question={currentQ}
+        totalQuestions={questions.length}
         questionStartedAt={session.question_started_at ?? new Date().toISOString()}
         onAnswered={handleAnswered}
         alreadyAnswered={alreadyAnswered}

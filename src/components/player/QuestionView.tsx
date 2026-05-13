@@ -2,13 +2,15 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { submitAnswer } from '@/lib/game/actions'
-import { HOK_QUESTIONS } from '@/lib/game/seedData'
 import { ANSWER_COLORS } from '@/lib/game/utils'
+import type { Question } from '@/types/game'
 
 interface QuestionViewProps {
   sessionId: string
   playerId: string
   questionIndex: number
+  question: Question | undefined
+  totalQuestions: number
   questionStartedAt: string
   onAnswered: (result: { isCorrect: boolean; pointsEarned: number; answer: number }) => void
   alreadyAnswered: boolean
@@ -18,11 +20,12 @@ export function QuestionView({
   sessionId,
   playerId,
   questionIndex,
+  question,
+  totalQuestions,
   questionStartedAt,
   onAnswered,
   alreadyAnswered,
 }: QuestionViewProps) {
-  const question = HOK_QUESTIONS[questionIndex]
   const timeLimit = question?.time_limit ?? 20
   const [timeLeft, setTimeLeft] = useState(timeLimit)
   const [selected, setSelected] = useState<number | null>(null)
@@ -78,7 +81,7 @@ export function QuestionView({
         <div className="flex items-center justify-between max-w-lg mx-auto">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-              Vraag {questionIndex + 1}/{HOK_QUESTIONS.length}
+              Vraag {questionIndex + 1}/{totalQuestions || '…'}
             </span>
           </div>
 
@@ -109,7 +112,7 @@ export function QuestionView({
 
         {/* Progress segments */}
         <div className="flex gap-1 mt-2 max-w-lg mx-auto">
-          {HOK_QUESTIONS.map((_, i) => (
+          {Array.from({ length: totalQuestions }).map((_, i) => (
             <div
               key={i}
               className={`flex-1 h-1 rounded-full transition-colors ${

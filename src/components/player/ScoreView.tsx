@@ -3,29 +3,32 @@
 import { useEffect } from 'react'
 import confetti from 'canvas-confetti'
 import { usePlayers } from '@/hooks/usePlayers'
+import { useQuestions } from '@/hooks/useQuestions'
 import { getLevel, getBadges } from '@/lib/game/utils'
-import { HOK_QUESTIONS } from '@/lib/game/seedData'
 import { useGameStore } from '@/store/gameStore'
 import { XPSummary } from './XPSummary'
 
 interface ScoreViewProps {
   sessionId: string
   playerId: string
+  quizId: string
   nickname?: string
 }
 
-const MAX_SCORE = HOK_QUESTIONS.length * 1000
-
-export function ScoreView({ sessionId, playerId, nickname = '' }: ScoreViewProps) {
+export function ScoreView({ sessionId, playerId, quizId, nickname = '' }: ScoreViewProps) {
   const players = usePlayers(sessionId)
+  const questions = useQuestions(quizId)
   const { answers } = useGameStore()
 
   const me = players.find(p => p.id === playerId)
   const sorted = [...players].sort((a, b) => b.score - a.score)
   const myRank = sorted.findIndex(p => p.id === playerId) + 1
-  const level = me ? getLevel(me.score, MAX_SCORE) : null
+
+  const totalQuestions = questions.length || 10
+  const maxScore = totalQuestions * 1000
+  const level = me ? getLevel(me.score, maxScore) : null
   const badges = me
-    ? getBadges(playerId, answers, answers, HOK_QUESTIONS.length)
+    ? getBadges(playerId, answers, answers, totalQuestions)
     : []
 
   useEffect(() => {
@@ -95,7 +98,7 @@ export function ScoreView({ sessionId, playerId, nickname = '' }: ScoreViewProps
       )}
 
       {/* XP + streak */}
-      <XPSummary playerId={playerId} nickname={nickname} />
+      <XPSummary playerId={playerId} nickname={nickname} totalQuestions={totalQuestions} />
 
       {/* Level legend */}
       <div className="w-full max-w-sm mt-6 slide-up" style={{ animationDelay: '0.6s' }}>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useGameSession } from '@/hooks/useGameSession'
+import { useQuestions } from '@/hooks/useQuestions'
 import { Lobby } from '@/components/host/Lobby'
 import { QuestionControl } from '@/components/host/QuestionControl'
 import { Leaderboard } from '@/components/host/Leaderboard'
@@ -15,6 +16,7 @@ interface Props {
 export function HostGameClient({ sessionId, initialSession, joinUrl }: Props) {
   const session = useGameSession(sessionId, initialSession)
   const current = session ?? initialSession
+  const questions = useQuestions(current.quiz_id)
 
   if (current.status === 'lobby') {
     return (
@@ -32,6 +34,7 @@ export function HostGameClient({ sessionId, initialSession, joinUrl }: Props) {
         sessionId={sessionId}
         questionIndex={current.current_question}
         questionStartedAt={current.question_started_at}
+        questions={questions}
       />
     )
   }

@@ -2,15 +2,15 @@
 
 import { useEffect } from 'react'
 import confetti from 'canvas-confetti'
-import { HOK_QUESTIONS } from '@/lib/game/seedData'
 import { ANSWER_COLORS } from '@/lib/game/utils'
 import { VideoClip } from './VideoClip'
+import type { Question } from '@/types/game'
 
 interface AnswerFeedbackProps {
   isCorrect: boolean
   pointsEarned: number
   selectedAnswer: number
-  questionIndex: number
+  question: Question | undefined
   totalScore: number
 }
 
@@ -18,10 +18,9 @@ export function AnswerFeedback({
   isCorrect,
   pointsEarned,
   selectedAnswer,
-  questionIndex,
+  question,
   totalScore,
 }: AnswerFeedbackProps) {
-  const question = HOK_QUESTIONS[questionIndex]
 
   useEffect(() => {
     if (isCorrect) {
@@ -92,8 +91,8 @@ export function AnswerFeedback({
             📱 Bekijk de uitleg
           </p>
           <VideoClip
-            topic={question.video_topic}
-            videoUrl={question.video_url || undefined}
+            topic={question.video_topic ?? question.question}
+            videoUrl={question.video_url ?? undefined}
           />
         </div>
       )}

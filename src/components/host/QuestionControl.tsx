@@ -4,25 +4,26 @@ import { useState, useEffect, useTransition } from 'react'
 import { useAnswers } from '@/hooks/useAnswers'
 import { usePlayers } from '@/hooks/usePlayers'
 import { advanceGame } from '@/lib/game/actions'
-import { HOK_QUESTIONS } from '@/lib/game/seedData'
 import { ANSWER_COLORS } from '@/lib/game/utils'
+import type { Question } from '@/types/game'
 
 interface QuestionControlProps {
   sessionId: string
   questionIndex: number
   questionStartedAt: string | null
+  questions: Question[]
 }
 
-export function QuestionControl({ sessionId, questionIndex, questionStartedAt }: QuestionControlProps) {
+export function QuestionControl({ sessionId, questionIndex, questionStartedAt, questions }: QuestionControlProps) {
   const answers = useAnswers(sessionId)
   const players = usePlayers(sessionId)
   const [timeLeft, setTimeLeft] = useState<number>(20)
   const [showResults, setShowResults] = useState(false)
   const [pending, startTransition] = useTransition()
 
-  const question = HOK_QUESTIONS[questionIndex]
+  const question = questions[questionIndex]
   const timeLimit = question?.time_limit ?? 20
-  const isLastQuestion = questionIndex === HOK_QUESTIONS.length - 1
+  const isLastQuestion = questionIndex === questions.length - 1
 
   const currentAnswers = answers.filter(a => a.question_index === questionIndex)
   const answerCounts = question?.options.map((_, i) =>
@@ -69,7 +70,7 @@ export function QuestionControl({ sessionId, questionIndex, questionStartedAt }:
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="bg-hok-navy text-white text-sm font-black px-4 py-2 rounded-full">
-          Vraag {questionIndex + 1} / {HOK_QUESTIONS.length}
+          Vraag {questionIndex + 1} / {questions.length || '…'}
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-500">{totalAnswered}/{players.length} geantwoord</span>
@@ -193,7 +194,7 @@ export function QuestionControl({ sessionId, questionIndex, questionStartedAt }:
           ) : isLastQuestion ? (
             'Eindresultaten tonen 🏆'
           ) : (
-            `Volgende vraag (${questionIndex + 2}/${HOK_QUESTIONS.length}) →`
+            `Volgende vraag (${questionIndex + 2}/${questions.length}) →`
           )}
         </button>
       )}

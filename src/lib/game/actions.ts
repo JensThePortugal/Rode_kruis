@@ -1,20 +1,15 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { HOK_QUESTIONS } from './seedData'
 import { generateJoinCode, calculateScore } from './utils'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import type { Question } from '@/types/game'
 
 export async function loginWithMagicLink(formData: FormData) {
   const supabase = await createClient()
   const email = formData.get('email') as string
   const fullName = formData.get('full_name') as string
-
-  if (fullName) {
-    // Store name in localStorage via cookie for profile creation after magic link click
-    // We store it temporarily so we can create the profile on first login
-  }
 
   const { error } = await supabase.auth.signInWithOtp({
     email,
@@ -34,70 +29,48 @@ export async function createGameSession() {
   if (!user) redirect('/login')
 
   // Ensure trainer profile exists
-  const { data: profile } = await supabase
+  const { data: existingProfile } = await supabase
     .from('trainer_profiles')
     .select('id')
     .eq('id', user.id)
     .single()
 
-  if (!profile) {
+  if (!existingProfile) {
     await supabase.from('trainer_profiles').insert({
       id: user.id,
       full_name: user.user_metadata?.full_name ?? user.email ?? 'Trainer',
+      role: 'trainer',
     })
   }
 
-  // Find or create the default quiz
-  let quizId: string
-  const { data: existingQuiz } = await supabase
+  // Altijd de globale HOK master quiz gebruiken
+  const { data: masterQuiz } = await supabase
     .from('quizzes')
     .select('id')
-    .eq('trainer_id', user.id)
+    .is('trainer_id', null)
+    .limit(1)
     .single()
 
-  if (existingQuiz) {
-    quizId = existingQuiz.id
-  } else {
-    const { data: newQuiz, error: quizError } = await supabase
-      .from('quizzes')
-      .insert({ trainer_id: user.id, title: 'EHBO Quiz – Het Oranje Kruis' })
-      .select('id')
-      .single()
-
-    if (quizError || !newQuiz) return { error: quizError?.message ?? 'Quiz aanmaken mislukt' }
-    quizId = newQuiz.id
-
-    // Seed questions
-    const questionsToInsert = HOK_QUESTIONS.map((q, i) => ({
-      quiz_id: quizId,
-      question: q.question,
-      options: q.options,
-      correct_answer: q.correct_answer,
-      explanation: q.explanation,
-      time_limit: q.time_limit,
-      order_index: i,
-    }))
-    await supabase.from('questions').insert(questionsToInsert)
+  if (!masterQuiz) {
+    return { error: 'HOK master quiz niet gevonden. Voer eerst de database migration uit.' }
   }
 
-  // Generate unique join code
+  // Genereer unieke join code
   let joinCode = generateJoinCode()
-  let attempts = 0
-  while (attempts < 10) {
+  for (let i = 0; i < 10; i++) {
     const { data: existing } = await supabase
       .from('game_sessions')
       .select('id')
       .eq('join_code', joinCode)
-      .single()
+      .maybeSingle()
     if (!existing) break
     joinCode = generateJoinCode()
-    attempts++
   }
 
   const { data: session, error } = await supabase
     .from('game_sessions')
     .insert({
-      quiz_id: quizId,
+      quiz_id: masterQuiz.id,
       trainer_id: user.id,
       join_code: joinCode,
       status: 'lobby',
@@ -131,8 +104,14 @@ export async function advanceGame(sessionId: string, action: 'next' | 'finish') 
     return { done: true }
   }
 
+  // Vraagaantal ophalen uit DB (niet hardcoded)
+  const { count: questionCount } = await supabase
+    .from('questions')
+    .select('*', { count: 'exact', head: true })
+    .eq('quiz_id', session.quiz_id)
+
   const nextQuestion = session.current_question + 1
-  const isLastQuestion = nextQuestion >= HOK_QUESTIONS.length
+  const isLastQuestion = nextQuestion >= (questionCount ?? 10)
 
   if (isLastQuestion) {
     await supabase
@@ -189,16 +168,16 @@ export async function submitAnswer(
 ) {
   const supabase = await createClient()
 
+  const { data: sessionData } = await supabase
+    .from('game_sessions')
+    .select('quiz_id')
+    .eq('id', sessionId)
+    .single()
+
   const { data: question } = await supabase
     .from('questions')
     .select('correct_answer')
-    .eq('quiz_id', (
-      await supabase
-        .from('game_sessions')
-        .select('quiz_id')
-        .eq('id', sessionId)
-        .single()
-    ).data?.quiz_id ?? '')
+    .eq('quiz_id', sessionData?.quiz_id ?? '')
     .eq('order_index', questionIndex)
     .single()
 
@@ -230,4 +209,117 @@ export async function signOut() {
   await supabase.auth.signOut()
   revalidatePath('/', 'layout')
   redirect('/login')
+}
+
+// ============================================================
+// HOK Admin actions — alleen toegankelijk met role = 'admin'
+// ============================================================
+
+async function requireAdmin() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { data: profile } = await supabase
+    .from('trainer_profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'admin') return null
+  return supabase
+}
+
+export async function getAdminQuestions(): Promise<Question[]> {
+  const supabase = await createClient()
+  const { data: quiz } = await supabase
+    .from('quizzes')
+    .select('id')
+    .is('trainer_id', null)
+    .single()
+
+  if (!quiz) return []
+
+  const { data } = await supabase
+    .from('questions')
+    .select('*')
+    .eq('quiz_id', quiz.id)
+    .order('order_index')
+
+  return (data as Question[]) ?? []
+}
+
+export async function updateQuestion(
+  questionId: string,
+  updates: {
+    question: string
+    options: string[]
+    correct_answer: number
+    explanation: string
+    time_limit: number
+    video_topic: string
+    video_url: string
+  }
+) {
+  const supabase = await requireAdmin()
+  if (!supabase) return { error: 'Geen toegang — alleen HOK admins' }
+
+  const { error } = await supabase
+    .from('questions')
+    .update(updates)
+    .eq('id', questionId)
+
+  if (error) return { error: error.message }
+  revalidatePath('/admin/questions')
+  return { success: true }
+}
+
+export async function addQuestion(data: {
+  question: string
+  options: string[]
+  correct_answer: number
+  explanation: string
+  time_limit: number
+  video_topic: string
+  video_url: string
+}) {
+  const supabase = await requireAdmin()
+  if (!supabase) return { error: 'Geen toegang — alleen HOK admins' }
+
+  const { data: quiz } = await supabase
+    .from('quizzes')
+    .select('id')
+    .is('trainer_id', null)
+    .single()
+
+  if (!quiz) return { error: 'Master quiz niet gevonden' }
+
+  const { count } = await supabase
+    .from('questions')
+    .select('*', { count: 'exact', head: true })
+    .eq('quiz_id', quiz.id)
+
+  const { error } = await supabase.from('questions').insert({
+    ...data,
+    quiz_id: quiz.id,
+    order_index: count ?? 0,
+  })
+
+  if (error) return { error: error.message }
+  revalidatePath('/admin/questions')
+  return { success: true }
+}
+
+export async function deleteQuestion(questionId: string) {
+  const supabase = await requireAdmin()
+  if (!supabase) return { error: 'Geen toegang — alleen HOK admins' }
+
+  const { error } = await supabase
+    .from('questions')
+    .delete()
+    .eq('id', questionId)
+
+  if (error) return { error: error.message }
+  revalidatePath('/admin/questions')
+  return { success: true }
 }

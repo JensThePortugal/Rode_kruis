@@ -4,12 +4,13 @@ export interface TrainerProfile {
   id: string
   full_name: string
   organisation: string | null
+  role: 'trainer' | 'admin'
   created_at: string
 }
 
 export interface Quiz {
   id: string
-  trainer_id: string
+  trainer_id: string | null // null = globale HOK quiz
   title: string
   created_at: string
 }
@@ -20,9 +21,12 @@ export interface Question {
   question: string
   options: string[]
   correct_answer: number
-  explanation: string
+  explanation: string | null
   time_limit: number
   order_index: number
+  video_topic: string | null
+  video_url: string | null
+  updated_at: string
 }
 
 export interface GameSession {
