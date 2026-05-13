@@ -6,24 +6,22 @@ import Link from 'next/link'
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
+  const { data: profile } = user ? await supabase
     .from('trainer_profiles')
     .select('full_name, organisation, role')
     .eq('id', user.id)
-    .single()
+    .single() : { data: null }
 
   const isAdmin = profile?.role === 'admin'
 
   const { data: recentSessions } = await supabase
     .from('game_sessions')
     .select('id, join_code, status, created_at')
-    .eq('trainer_id', user.id)
     .order('created_at', { ascending: false })
     .limit(5)
 
-  const name = profile?.full_name ?? user.email ?? 'Trainer'
+  const name = profile?.full_name ?? user?.email ?? 'Trainer'
 
   return (
     <main className="flex-1 flex flex-col min-h-screen px-4 py-8 max-w-2xl mx-auto w-full">

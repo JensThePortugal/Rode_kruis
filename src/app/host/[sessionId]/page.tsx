@@ -9,14 +9,10 @@ interface Props {
 export default async function HostPage({ params }: Props) {
   const { sessionId } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
   const { data: session } = await supabase
     .from('game_sessions')
     .select('*')
     .eq('id', sessionId)
-    .eq('trainer_id', user.id)
     .single()
 
   if (!session) redirect('/dashboard')

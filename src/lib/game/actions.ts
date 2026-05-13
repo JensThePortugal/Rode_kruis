@@ -26,21 +26,21 @@ export async function loginWithMagicLink(formData: FormData) {
 export async function createGameSession() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
 
-  // Ensure trainer profile exists
-  const { data: existingProfile } = await supabase
-    .from('trainer_profiles')
-    .select('id')
-    .eq('id', user.id)
-    .single()
+  if (user) {
+    const { data: existingProfile } = await supabase
+      .from('trainer_profiles')
+      .select('id')
+      .eq('id', user.id)
+      .single()
 
-  if (!existingProfile) {
-    await supabase.from('trainer_profiles').insert({
-      id: user.id,
-      full_name: user.user_metadata?.full_name ?? user.email ?? 'Trainer',
-      role: 'trainer',
-    })
+    if (!existingProfile) {
+      await supabase.from('trainer_profiles').insert({
+        id: user.id,
+        full_name: user.user_metadata?.full_name ?? user.email ?? 'Trainer',
+        role: 'trainer',
+      })
+    }
   }
 
   // Altijd de globale HOK master quiz gebruiken
@@ -71,7 +71,7 @@ export async function createGameSession() {
     .from('game_sessions')
     .insert({
       quiz_id: masterQuiz.id,
-      trainer_id: user.id,
+      trainer_id: user?.id ?? null,
       join_code: joinCode,
       status: 'lobby',
       current_question: -1,
@@ -85,8 +85,6 @@ export async function createGameSession() {
 
 export async function advanceGame(sessionId: string, action: 'next' | 'finish') {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Niet ingelogd' }
 
   const { data: session } = await supabase
     .from('game_sessions')
